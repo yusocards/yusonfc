@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Kod Üretme</title>
+  <style>
+    body { font-family: Arial; background:#f5f5f5; text-align:center; padding:50px; }
+    .box { background:white; padding:40px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1); display:inline-block; width:750px; }
+    button { background:#007bff; color:white; border:none; padding:10px 20px; font-size:16px; border-radius:8px; cursor:pointer; margin-top:10px; }
+    button:hover { background:#0056b3; }
+    ul { list-style:none; padding:0; margin-top:20px; }
+    li { background:#f0f0f0; margin:8px 0; padding:10px; border-radius:5px; font-weight:bold; display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    .delete-btn { background:#dc3545; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; }
+    .delete-btn:hover { background:#a71d2a; }
+    select, input { padding:5px; border-radius:5px; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>🔑 Yeni Sipariş Kodu Üret</h2>
+    <button onclick="createCode()">Kod Üret</button>
+    <ul id="codeList"></ul>
+  </div>
+
+  <script>
+    // Sayfa açıldığında kodları yükle
+    window.onload = function() {
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      updateList(orders);
+    };
+
+    // Kod üret
+    function createCode() {
+      const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+      let code = "";
+      for (let i = 0; i < 8; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      code += "YUSO";
+
+      let order = {
+        code: code,
+        status: "Hazırlanıyor", // varsayılan
+        date: new Date().toLocaleString(),
+        eta: "3-5 gün"
+      };
+
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      orders.push(order);
+      localStorage.setItem("orders", JSON.stringify(orders));
+
+      updateList(orders);
+    }
+
+    // Listeyi güncelle
+    function updateList(orders) {
+      let list = document.getElementById("codeList");
+      list.innerHTML = "";
+      orders.forEach((order, index) => {
+        let li = document.createElement("li");
+        li.innerHTML = `
+          <span>${order.code} | 📅 ${order.date}</span>
+          <select onchange="updateStatus(${index}, this.value)">
+            <option ${order.status==="Hazırlanıyor"?"selected":""}>Hazırlanıyor</option>
+            <option ${order.status==="Kargoya Verildi"?"selected":""}>Kargoya Verildi</option>
+            <option ${order.status==="Teslim Edildi"?"selected":""}>Teslim Edildi</option>
+          </select>
+          <input type="text" value="${order.eta}" onchange="updateEta(${index}, this.value)">
+          <button class="delete-btn" onclick="deleteCode(${index})">❌ Sil</button>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    // Durum güncelleme
+    function updateStatus(index, newStatus) {
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      orders[index].status = newStatus;
+      localStorage.setItem("orders", JSON.stringify(orders));
+    }
+
+    // Gün güncelleme
+    function updateEta(index, newEta) {
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      orders[index].eta = newEta;
+      localStorage.setItem("orders", JSON.stringify(orders));
+    }
+
+    // Kod sil
+    function deleteCode(index) {
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      orders.splice(index, 1);
+      localStorage.setItem("orders", JSON.stringify(orders));
+      updateList(orders);
+    }
+  </script>
+</body>
+</html>

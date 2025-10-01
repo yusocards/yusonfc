@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <title>Sipariş Takip</title>
+  <style>
+    body { font-family: Arial; background:#eef2f3; text-align:center; padding:50px; }
+    .box { background:white; padding:40px; border-radius:15px; box-shadow:0 5px 15px rgba(0,0,0,0.1); display:inline-block; width:500px; }
+    input { padding:10px; font-size:16px; width:70%; border:1px solid #ccc; border-radius:5px; }
+    button { background:#28a745; color:white; border:none; padding:10px 20px; font-size:16px; border-radius:8px; cursor:pointer; }
+    button:hover { background:#1e7e34; }
+    .result { margin-top:20px; font-size:18px; font-weight:bold; }
+    .notification {
+      margin-top:20px;
+      padding:15px;
+      background:#007bff;
+      color:white;
+      border-radius:8px;
+      display:none;
+      animation: fadeIn 0.5s;
+    }
+    @keyframes fadeIn {
+      from { opacity:0; transform:translateY(-10px); }
+      to { opacity:1; transform:translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2>📦 Sipariş Takip</h2>
+    <input type="text" id="orderCode" placeholder="Sipariş Kodunu Gir">
+    <button onclick="trackOrder()">Takip Et</button>
+    <div class="result" id="result"></div>
+    <div class="notification" id="notification"></div>
+  </div>
+
+  <script>
+    function trackOrder() {
+      let code = document.getElementById("orderCode").value.trim();
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      let order = orders.find(o => o.code === code);
+
+      if (order) {
+        document.getElementById("result").innerHTML = `
+          ✅ Kod: ${order.code}<br>
+          📅 Tarih: ${order.date}<br>
+          ⏳ Tahmini Teslim: ${order.eta}<br>
+          📦 Durum: ${order.status}
+        `;
+
+        // Bildirim efekti
+        let note = document.getElementById("notification");
+        note.innerText = `🔔 Siparişiniz şu an "${order.status}" aşamasında!`;
+        note.style.display = "block";
+
+        // 3 saniye sonra kaybolsun
+        setTimeout(() => {
+          note.style.display = "none";
+        }, 3000);
+
+      } else {
+        document.getElementById("result").innerText = "❌ Böyle bir sipariş bulunamadı.";
+        document.getElementById("notification").style.display = "none";
+      }
+    }
+  </script>
+</body>
+</html>
